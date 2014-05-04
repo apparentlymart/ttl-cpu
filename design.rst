@@ -115,6 +115,86 @@ bitwise operations. For example, "x & 1" would have the desired effect of maskin
 everything except the low-order bit, but "x | 0b100" would be expanded as "x | 0b1111100",
 not "x | 0b0000100" as one might expect.
 
+For some opcodes the "target" is specified as an input. In this case its value drives the
+L bus multiplexer instead of T as normal, and the T bus multiplexers are disabled. Such opcodes
+may therefore not use the "L" portion of the instruction.
+
+Buses
+-----
+
+The design includes five separate buses, which can be interconnected for certain operations:
+
+* Data Bus: Input/output of data to/from memory devices. (RAM, ROM)
+* Address Bus: Input of address to memory devices. (RAM, ROM)
+* L Bus: Value of the L operand in the instruction. (immediate value or register value)
+* R Bus: Value of the R operand in the instruction. (immediate value or register value)
+* T Bus: Result value of the instruction.
+
+Interconnects
+-------------
+
+L and R Buses
+^^^^^^^^^^^^^
+
+Inputs:
+
+* Immediate value (sign-extended 3 LSBs from IR)
+
+* R1, R2, R3, R4 and SP registers
+
+* Program Counter
+
+Outputs:
+
+* ALU
+
+* Address Bus
+
+T Bus
+^^^^^
+
+Inputs:
+
+* ALU (for arithmetic operations)
+
+* Data Bus (for 'load' operations)
+
+Outputs:
+
+* R1, R2, R3, R4 and SP registers
+
+* Program Counter (LSB ignored and fixed at 0 to ensure an even number)
+
+Data Bus
+^^^^^^^^
+
+Inputs:
+
+* Memory Data (when reading memory)
+
+Outputs:
+
+* Memory Data (when writing memory)
+
+* IR (when fetching an instruction)
+
+* T Bus (when loading data from memory into a register)
+
+Address Bus
+^^^^^^^^^^^
+
+Inputs:
+
+* PC (when fetching an instruction)
+
+* Address Value (8 LSBs from IR)
+
+* L and R buses (when handing an indirect memory access)
+
+Outputs:
+
+* Memory Address (permanently connected)
+
 Component Notes
 ---------------
 
@@ -126,5 +206,14 @@ http://www.digikey.com/product-detail/en/SN74LS181N/296-33973-5-ND/1594771
 
 Renesas R1LP0108ESP-5SI#B0: 1M Parallel SRAM (32-SOP)
 http://www.digikey.com/product-detail/en/R1LP0108ESP-5SI%23B0/R1LP0108ESP-5SI%23B0-ND/2694359
+
+Texas Instruments SN74LS593N: 8-bit counter
+http://www.digikey.com/product-detail/en/SN74LS593N/296-3719-5-ND/377750
+
+Texas Instruments SN74HC574N: 8-bit D Flip-flop
+http://www.digikey.com/product-detail/en/SN74HC574N/296-1598-5-ND/277244
+
+Texas Instruments 74HCT4051N,112: 8-to-1 Multiplexer
+http://www.digikey.com/product-detail/en/74HCT4051N,112/568-7851-5-ND/1230893
 
 
