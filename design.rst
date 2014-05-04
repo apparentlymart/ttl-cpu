@@ -124,5 +124,7 @@ http://www.digikey.com/product-detail/en/AT28C256-15PU/AT28C256-15PU-ND/1008506
 Texus Instruments SN74LS181N: 4-bit ALU
 http://www.digikey.com/product-detail/en/SN74LS181N/296-33973-5-ND/1594771
 
+Renesas R1LP0108ESP-5SI#B0: 1M Parallel SRAM (32-SOP)
+http://www.digikey.com/product-detail/en/R1LP0108ESP-5SI%23B0/R1LP0108ESP-5SI%23B0-ND/2694359
 
 
