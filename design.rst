@@ -93,12 +93,12 @@ The T, L and R parts of an instruction all use a common encoding:
 Code  Meaning
 ====  ========================================
 1XXX  Immediate 3-bit number
+0000  Program Counter
 0001  Register 1
-0002  Register 2
-0003  Register 3
-0004  Register 4
-0100  Program Counter
-0101  Stack Pointer
+0010  Register 2
+0011  Register 3
+0100  Register 4
+0111  Stack Pointer
 ====  ========================================
 
 Other operand codes with MSB=0 are reserved for future expansion.
