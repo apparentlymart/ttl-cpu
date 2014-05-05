@@ -150,6 +150,10 @@ Outputs:
 
 * Address Bus
 
+ALU is permanently connected to the L and R buses. The Address Bus
+may be optionally connected to one of these buses at a time via its
+input mux.
+
 T Bus
 ^^^^^
 
@@ -170,15 +174,19 @@ Data Bus
 
 Inputs:
 
-* Memory Data (when reading memory)
+* L bus
+
+* Memory
 
 Outputs:
 
-* Memory Data (when writing memory)
-
-* IR (when fetching an instruction)
+* IR (when fetching an instruction) (Low/High Bytes are two separate outputs)
 
 * T Bus (when loading data from memory into a register)
+
+NB: Bridging the L bus to the Data Bus implies placing the memory into write mode, which
+effectively turns the memory into an output. This is used during the STO and STI operations,
+which operate with the L bus populated from the register selected by T.
 
 Address Bus
 ^^^^^^^^^^^
@@ -194,6 +202,69 @@ Inputs:
 Outputs:
 
 * Memory Address (permanently connected)
+
+Control Word
+------------
+
+The following control signals are included in a control word:
+
+====  =================================================================================
+Bits  Meaning
+====  =================================================================================
+1     T Bus Active (clock pulse reaches selected register)
+1     Memory in Write Mode, L Bus bridged to Data Bus, L Bus populated from T selector
+1     ALU enabled (will assert on T bus)
+2     Data Bus Output Selection (None, IR L, IR H, T Bus)
+2     Addr Bus Input Selection (PC, L Bus, R Bus, Addr)
+====  =================================================================================
+
+* L/R buses are always active with the value selected by the
+  corresponding operand, but for two exceptions: when the address
+  bus input is addr (so we're interpreting the IR LSB as an
+  address rather than two operands), and when the memory is
+  in write mode due to the exception noted below.
+
+* When L/R buses are active the L and R instruction operands are
+  decoded and the corresponding value asserted on them.
+
+* When the T bus is active, the T instruction operand is decoded,
+  and the clock signal and T bus outputs are connected to the
+  selected register.
+
+* Something is always asserting on the address bus, but it
+  can be effectively disconnected by disabling either the L or R
+  bus and selecting that bus.
+
+* The ALU is implicitly activated when the MSB of the opcode
+  in the instruction register is 1 AND the L and R buses are active.
+  When it is active, it asserts on the T bus. When it is inactive
+  it is disconnected. The ALU is always deactivated for a non-ALU
+  instruction.
+
+* The T bus input is automatically selected based on the current
+  instruction: if it's an ALU instruction than the ALU is selected.
+  Otherwise, the data bus bridged to the T bus.
+
+* Whenever the L/R buses are active they are *always* connected to
+  the ALU. Addr Bus Input Selection allows one of the buses to
+  additionally be bridged into the address bus for indirect writes.
+
+* As hinted at in the table, the memory being in write mode has two
+  special side-effects: the L bus is populated based on the T selector
+  rather than the L selector, and the L bus is bridged into the
+  data bus. This is used to execute both STO and STI, in which the
+  value to be stored is read from a register given in the T selector,
+  whereas for all other instructions T is a register to write *to*.
+  R remains populated as normal in this mode however, unless the
+  address bus input is also selecting "addr".
+
+* When Data Bus Output is selecting either IR L or IR H, the clock
+  is automatically connected to the selected register so it will
+  update from the Data Bus at the next clock pulse.
+
+* If the data bus output is set to either IR L or IR H *and* memory
+  is in write mode, the value of the register selected by T would
+  be written into one of the IRs. This is not a valid state.
 
 Component Notes
 ---------------
