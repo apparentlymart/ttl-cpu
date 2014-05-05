@@ -45,10 +45,10 @@ The following symbols are used to describe the operations::
 =====  ========  ============================================================
 Code   Mnemonic  Description
 =====  ========  ============================================================
-00000  CAL       push PC to SP, PC = A
-00001  CAI       push PC to SP, PC = *T
-00010  RET       PC = pop 
-00011  REI       PC = pop SP, enable interrupts
+00000  
+00001  
+00010  
+00011  
 00100  STO       *A = T
 00101  STI       *T = R (L ignored)
 00110  LOA       T = *A
