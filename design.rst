@@ -211,6 +211,7 @@ The following control signals are included in a control word:
 ====  =================================================================================
 Bits  Meaning
 ====  =================================================================================
+1     PC will increment on clock pulse
 1     T Bus Active (clock pulse reaches selected register)
 1     Memory in Write Mode, L Bus bridged to Data Bus, L Bus populated from T selector
 1     ALU enabled (will assert on T bus)
