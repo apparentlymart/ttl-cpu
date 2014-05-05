@@ -209,14 +209,14 @@ Control Word
 The following control signals are included in a control word:
 
 ====  =================================================================================
-Bits  Meaning
+Bit   Meaning
 ====  =================================================================================
-1     PC will increment on clock pulse
+0     PC will increment on clock pulse
 1     T Bus Active (clock pulse reaches selected register)
-1     Memory in Write Mode, L Bus bridged to Data Bus, L Bus populated from T selector
-1     ALU enabled (will assert on T bus)
-2     Data Bus Output Selection (None, IR L, IR H, T Bus)
-2     Addr Bus Input Selection (PC, L Bus, R Bus, Addr)
+2     Memory in Write Mode, L Bus bridged to Data Bus, L Bus populated from T selector
+3     ALU enabled (will assert on T bus)
+4-5   Data Bus Output Selection (0: None, 1: T Bus, 2: IR L, 3: IR H)
+6-7   Addr Bus Input Selection (0: PC, 1: Addr, 2: L Bus, 3: R Bus)
 ====  =================================================================================
 
 * L/R buses are always active with the value selected by the
@@ -232,9 +232,7 @@ Bits  Meaning
   and the clock signal and T bus outputs are connected to the
   selected register.
 
-* Something is always asserting on the address bus, but it
-  can be effectively disconnected by disabling either the L or R
-  bus and selecting that bus.
+* Something is always connected to the address bus.
 
 * The ALU is implicitly activated when the MSB of the opcode
   in the instruction register is 1 AND the L and R buses are active.
