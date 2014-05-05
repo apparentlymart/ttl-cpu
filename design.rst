@@ -264,6 +264,29 @@ Bit   Meaning
   is in write mode, the value of the register selected by T would
   be written into one of the IRs. This is not a valid state.
 
+States
+------
+
+Although there are in theory 128 different states for our 7-bit control word,
+not all state combinations are useful/valid.
+
+=====  =========  ==========  ========  ====  =====  =========================================
+State  AddrBusIn  DataBusOut  MemWrite  TBus  PCInc  Purpose
+=====  =========  ==========  ========  ====  =====  =========================================
+0001   PC         None        0         0     0      Initial bootup state.
+0010   PC         None        0         0     1      Increment program counter.
+0011   PC         None        0         1     0      Write ALU result to register.
+0100   PC         IR L        0         0     0      Fetch PC into lower byte of IR
+0101   PC         IR H        0         0     0      Fetch PC into higher byte of IR
+0110   Addr       None        1         0     0      Store L Bus to memory.
+0111   Addr       T Bus       0         1     0      Fetch memory value into register.
+1000   R Bus      None        1         0     0      Indirect store L Bus to memory.
+1001   R Bus      T Bus       0         1     0      Indirect fetch memory value into register
+=====  =========  ==========  ========  ====  =====  =========================================
+
+(TODO: States for the Jump and Branch instructions? In these intructions we need to write
+Addr or L bus into PC, but we currently have no data paths for these.)
+
 Component Notes
 ---------------
 
