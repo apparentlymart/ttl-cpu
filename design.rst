@@ -214,9 +214,8 @@ Bit   Meaning
 0     PC will increment on clock pulse
 1     T Bus Active (clock pulse reaches selected register)
 2     Memory in Write Mode, L Bus bridged to Data Bus, L Bus populated from T selector
-3     ALU enabled (will assert on T bus)
-4-5   Data Bus Output Selection (0: None, 1: T Bus, 2: IR L, 3: IR H)
-6-7   Addr Bus Input Selection (0: PC, 1: Addr, 2: L Bus, 3: R Bus)
+3-4   Data Bus Output Selection (0: None, 1: T Bus, 2: IR L, 3: IR H)
+5-6   Addr Bus Input Selection (0: PC, 1: Addr, 2: L Bus, 3: R Bus)
 ====  =================================================================================
 
 * L/R buses are always active with the value selected by the
