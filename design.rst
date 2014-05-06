@@ -84,6 +84,10 @@ Notes:
 * The ADD/ADC and SUB/SUC pairs intentionally differ only by the LSB so that we can simply AND
   the LSB with the carry flag to get the carry in for the adder/subtractor.
 
+* Conditional instructions are expected to come in odd/even pairs with the even instruction
+  as the conditional and the next odd as an unconditional variant. This is because the
+  condition bit in the control state machine will be set to (LSB of L bus) | (LSB of opcode).
+
 Operand Format
 --------------
 
