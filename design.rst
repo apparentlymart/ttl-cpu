@@ -59,8 +59,8 @@ Code   Mnemonic  Description
 01011  
 01100  
 01101  
-01110  IEN       enable interrupts
-01111  IDI       disable interrupts
+01110  
+01111  
 10000  ADD       T = L + R
 10001  ADC       T = L + R + carry
 10010  SUB       T = L - R
