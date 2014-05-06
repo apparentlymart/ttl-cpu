@@ -207,6 +207,8 @@ Outputs:
 
 * Memory Address (permanently connected)
 
+* PC & 0b11111110 (when executing a jump instruction)
+
 Control Word
 ------------
 
@@ -218,8 +220,9 @@ Bit   Meaning
 0     PC will increment on clock pulse
 1     T Bus Active (clock pulse reaches selected register)
 2     Memory in Write Mode, L Bus bridged to Data Bus, L Bus populated from T selector
-3-4   Data Bus Output Selection (0: None, 1: T Bus, 2: IR L, 3: IR H)
-5-6   Addr Bus Input Selection (0: PC, 1: Addr, 2: L Bus, 3: R Bus)
+3     PC in Write Mode, Input from Address Bus, L Bus populated from T selector
+4-5   Data Bus Output Selection (0: None, 1: T Bus, 2: IR L, 3: IR H)
+6-7   Addr Bus Input Selection (0: PC, 1: Addr, 2: L Bus, 3: R Bus)
 ====  =================================================================================
 
 * L/R buses are always active with the value selected by the
@@ -251,6 +254,11 @@ Bit   Meaning
   the ALU. Addr Bus Input Selection allows one of the buses to
   additionally be bridged into the address bus for indirect writes.
 
+* The L bus is normally populated based on the L selector, but it
+  is populated based on the T selector in three special cases:
+  when memory is in write mode, when PC is in write mode, or
+  when we are incrementing PC.
+
 * As hinted at in the table, the memory being in write mode has two
   special side-effects: the L bus is populated based on the T selector
   rather than the L selector, and the L bus is bridged into the
@@ -271,25 +279,83 @@ Bit   Meaning
 States
 ------
 
-Although there are in theory 128 different states for our 7-bit control word,
-not all state combinations are useful/valid.
+Although there are in theory 256 different states for our 8-bit control word,
+not all state combinations are useful/valid. Therefore we encode the valid
+states using a 4-bit state word, which then maps to a control word.
 
-=====  =========  ==========  ========  ====  =====  =========================================
-State  AddrBusIn  DataBusOut  MemWrite  TBus  PCInc  Purpose
-=====  =========  ==========  ========  ====  =====  =========================================
-0001   PC         None        0         0     0      Initial bootup state.
-0010   PC         None        0         0     1      Increment program counter.
-0011   PC         None        0         1     0      Write ALU result to register.
-0100   PC         IR L        0         0     0      Fetch PC into lower byte of IR
-0101   PC         IR H        0         0     0      Fetch PC into higher byte of IR
-0110   Addr       None        1         0     0      Store L Bus to memory.
-0111   Addr       T Bus       0         1     0      Fetch memory value into register.
-1000   R Bus      None        1         0     0      Indirect store L Bus to memory.
-1001   R Bus      T Bus       0         1     0      Indirect fetch memory value into register
-=====  =========  ==========  ========  ====  =====  =========================================
+=====  ====  =========  ==========  ========  =======  ====  =====  =========================================
+State  Mnem  AddrBusIn  DataBusOut  MemWrite  PCWrite  TBus  PCInc  Purpose
+=====  ====  =========  ==========  ========  =======  ====  =====  =========================================
+0000   FINH  PC         IR H        0         0        0     0      Fetch instruction into higher byte of IR
+0001   FINL  PC         IR L        0         0        0     0      Fetch instruction into lower byte of IR
+0010   INPC  PC         None        0         0        0     1      Increment program counter.
+0011   WALU  PC         None        0         0        1     0      Write ALU result to register.
+0100   SMEM  Addr       None        1         0        0     0      Store L Bus to memory.
+0101   LMEM  Addr       T Bus       0         0        1     0      Fetch memory value into register.
+0110   SMEI  R Bus      None        1         0        0     0      Indirect store L Bus to memory.
+0111   LMEI  R Bus      T Bus       0         0        1     0      Indirect fetch memory value into register
+1000   SAPC  Addr       None        0         1        0     0      Store Addr into PC (Absolute Jump/Branch)
+1001   
+1010   
+1011   
+1100   
+1101   
+1110   
+1111   
+=====  ====  =========  ==========  ========  =======  ====  =====  =========================================
 
-(TODO: States for the Jump and Branch instructions? In these intructions we need to write
-Addr or L bus into PC, but we currently have no data paths for these.)
+At boot the system is in the BOOT state and unconditionally moves to the start of the instruction sequence.
+
+All instructions begin with the following sequence:
+
+* FINH: Fetch the high-order byte of the instruction
+* INPC: Increment the PC to an odd byte.
+* FINL: Fetch the low-order byte of the instruction.
+* INPC: Increment the PC to the next even byte, pointing at the next instruction.
+  (L bus is populated from T in this state, so the condition flag is available when choosing the next state.)
+
+(The implication of the above is that instructions are stored in memory
+with the MSB first.)
+
+After the four-cycle instruction fetch, the next state depends on the
+instruction opcode. The following table summarizes the state transitions for
+each opcode. In this table, states in parentheses are visited only if
+the condition flag is set in the previous state. As noted above, the
+"INPC" state implicitly populates L bus from T, so the first state
+can be skipped based on the LSB of whatever T has selected.
+
+===============  =====================================
+Opcode           States
+===============  =====================================
+STO              SMEM
+STI              SMEI
+LOA              LMEM
+LOI              LMEI
+JMC              (SAPC)
+JMP              SAPC
+All ALU Opcodes  WALU
+===============  =====================================
+
+TODO: JMC needs some more thought since we need to first enter a state
+where the L bus is asserting the condition flag, and then use the
+condition flag to decide whether to enter SAPC or just return to FINH.
+
+State Transitions
+-----------------
+
+State Transitions are a mapping from the following inputs to a state code:
+
+* Current Opcode (5 bits)
+* Current State (4 bits)
+* Condition Flag (1 bit)
+* Odd PC Flag (1 bit)
+
+This looks like a lot of combinations (2048) but there are lots of "don't care"
+cases since not all states are relevant to all opcodes and the condition
+and odd PC flags are only significant in a few cases.
+
+Also, the "current opcode" is undefined for the FINH and FINL states, so it
+*must* be "don't care" for these.
 
 Component Notes
 ---------------
