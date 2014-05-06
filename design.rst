@@ -55,10 +55,10 @@ Code   Mnemonic  Description
 00111  LOI       T = *R (L ignored)
 01000  JMC       PC = A if (T & 1) == 1
 01001  JMP       PC = A
-01010  JMI       PC = *T
-01011  NOP       no operation
-01100  BRC       PC = PC + R if (T & 1) == 1 (L ignored)
-01101  BRA       PC = PC + R (T, L ignored)
+01010  
+01011  
+01100  
+01101  
 01110  IEN       enable interrupts
 01111  IDI       disable interrupts
 10000  ADD       T = L + R
